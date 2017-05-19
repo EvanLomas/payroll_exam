@@ -1,6 +1,6 @@
 'use strict';
 
 module.exports = (params) => {
-  
-  // TODO
+  // TODO:
+  return 0;
 };

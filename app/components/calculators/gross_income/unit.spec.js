@@ -1,3 +1,10 @@
-var calc = require('./index.js');
+var calc = require('./index.js'),
+  expect = require('expect');
 
-// TODO: Test
+describe('gross_income', () => {
+  it('should return a number', () => {
+    expect(calc()).toBeA('number');
+  });
+
+  // TODO: Further tests
+});
