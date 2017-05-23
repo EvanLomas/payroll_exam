@@ -1,0 +1,141 @@
+<html>
+  <head>
+    <!-- Bootstrap CDN (in a real-world app, this would be included as either a bower component or webpack compiled library) -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  </head>
+  <body>
+
+    <script>
+      function getPostData(formCalculator) {
+        return {
+          first_name: formCalculator.first_name.value,
+          last_name: formCalculator.last_name.value,
+          annual_salary: Number(formCalculator.annual_salary.value),
+          super_rate: Number(formCalculator.super_rate.value),
+        };
+      }
+
+      function validatePostData(data) {
+        if(!(data.first_name && data.first_name.length)) {
+          return alert('First Name field is required');
+        }
+        if(!(data.last_name && data.last_name.length)) {
+          return alert('Last Name field is required');
+        }
+        if(!(data.annual_salary)) {
+          return alert('Annual Salary field is required');
+        }
+        if(!(data.super_rate)) {
+          return alert('Super Rate field is required');
+        }
+        return true;
+      };
+
+      function caller(path) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", path, true);
+        xhr.setRequestHeader("Content-type", "application/json");
+        return xhr;
+      }
+
+      function submitCalc(data) {
+        xhr = caller('api/calc');
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            var json = JSON.parse(xhr.responseText);
+            // TODO: Do something with the results
+            console.log('output',json);
+          }
+        };
+        xhr.send(JSON.stringify(data));
+      }
+
+      function calculate(formCalculator) {
+        var data = getPostData(formCalculator);
+        if(validatePostData(data)) {
+          submitCalc(data);
+        }
+      }
+
+
+      function submitSave(data) {
+        xhr = caller('api/save');
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            var json = JSON.parse(xhr.responseText);
+            // TODO: Do something with the results
+            console.log('output',json);
+          }
+        };
+        xhr.send(JSON.stringify(data));
+      }
+
+      function save(formCalculator) {
+        var data = getPostData(formCalculator);
+        if(validatePostData(data)) {
+          submitSave(data);
+        }
+      }
+    </script>
+
+    <!-- Payroll calculator -->
+    <form name="formCalculator" >
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Employee</h3>
+        </div>
+        <div class="panel-body">
+
+          <!-- First Name -->
+          <div class="input-group">
+            <span class="input-group-addon" id="first_name">
+              First Name
+            </span>
+            <input type="text" class="form-control" placeholder="First Name" aria-describedby="first_name" name="first_name">
+          </div>
+
+          <!-- Last Name -->
+          <div class="input-group">
+            <span class="input-group-addon" id="last_name">
+              Last Name
+            </span>
+            <input type="text" class="form-control" placeholder="Last Name" aria-describedby="last_name" name="last_name">
+          </div>
+
+          <!-- Annual Salary -->
+          <div class="input-group">
+            <span class="input-group-addon" id="annual_salary">
+              Annual Salary $
+            </span>
+            <input type="number" class="form-control" placeholder="Annual Salary" aria-describedby="annual_salary" name="annual_salary">
+          </div>
+
+          <!-- Super Rate -->
+          <div class="input-group">
+            <span class="input-group-addon" id="super_rate">
+              Super Rate %
+            </span>
+            <input type="number" class="form-control" placeholder="Super Rate" aria-describedby="super_rate" name="super_rate">
+          </div>
+
+          <button type="button" onclick="calculate(formCalculator)">Calculate</button>
+
+          <button type="button" onclick="save(formCalculator)">Save</button>
+
+          <!-- Pay Period -->
+          <!-- <div class="input-group">
+            <span class="input-group-addon" id="pay_period">
+              <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>&nbsp;
+              Pay Period
+            </span>
+            <input type="date" class="form-control" placeholder="Username" aria-describedby="pay_period">
+          </div> -->
+
+
+
+        </div>
+      </div>
+    </form>
+
+  </body>
+</html>
