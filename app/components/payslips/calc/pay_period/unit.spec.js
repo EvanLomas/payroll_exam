@@ -1,10 +1,12 @@
 var calc = require('./index.js'),
   expect = require('expect');
 
-describe('gross_income', () => {
+describe('calc > pay_period', () => {
   it('should return a number', () => {
     expect(calc()).toBeA('number');
   });
 
-  // TODO: Further tests
+  it('should return the current month', () => {
+    expect(calc()).toBe((new Date()).getMonth());
+  });
 });

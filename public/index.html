@@ -2,18 +2,115 @@
   <head>
     <!-- Bootstrap CDN (in a real-world app, this would be included as either a bower component or webpack compiled library) -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- JQuery 3.x -->
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.min.js"
+      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+      crossorigin="anonymous"></script>
   </head>
   <body>
 
     <script>
-      function getPostData(formCalculator) {
-        return {
+      var _formData;
+      var _payslipCalculated = false;
+
+
+      var taxTable = [{
+        min: 0,
+        max: 18200,
+        calc: (income) => { return 0; },
+      },{
+        min: 18201,
+        max: 37000,
+        calc: (income) => {
+          income = income || 0;
+          return Math.round(Math.ceil(income - 18200) * 0.19);
+        },
+      },{
+        min: 37001,
+        max: 80000,
+        calc: (income) => {
+          income = income || 0;
+          return Math.round(Math.ceil(income - 37000) * 0.325) + 3572;
+        },
+      },{
+        min: 80001,
+        max: 180000,
+        calc: (income) => {
+          income = income || 0;
+          return Math.round(Math.ceil(income - 80000) * 0.37) + 17547;
+        },
+      },{
+        min: 180001,
+        max: 0,
+        calc: (income) => {
+          income = income || 0;
+          return Math.round(Math.ceil(income - 180000) * 0.45) + 54547;
+        },
+      },];
+
+
+      function getFormData(formCalculator) {
+        return _formData = {
           first_name: formCalculator.first_name.value,
           last_name: formCalculator.last_name.value,
           annual_salary: Number(formCalculator.annual_salary.value),
           super_rate: Number(formCalculator.super_rate.value),
         };
       }
+
+      function payPeriod() {
+        var now = new Date();
+        _formData.pay_period = now.getMonth() + '/' + now.getFullYear();
+      };
+
+      function calc_gross_income() {
+        _formData.gross_income = Math.round(_formData.annual_salary / 12) || 0;
+      };
+
+      function calc_income_tax() {
+        var output = 0;
+        for(var i in taxTable) {
+          var tax = taxTable[i];
+          if(!tax.min || tax.min <= _formData.annual_salary) {
+            if(!tax.max || tax.max >= _formData.annual_salary) {
+              output += tax.calc(_formData.annual_salary);
+            }
+          }
+        }
+        _formData.income_tax = Math.round(output/12) || 0;
+      };
+
+      function calc_net_income() {
+        _formData.net_income = Math.round(_formData.gross_income - _formData.income_tax) || 0;
+      };
+
+      function calc_super() {
+        _formData.super = Math.round(_formData.gross_income * _formData.super_rate/100) || 0;
+      };
+
+      function calc_pay() {
+        _formData.pay = Math.round(_formData.net_income - _formData.super) || 0;
+      };
+
+
+      function calculatePayslip(formCalculator) {
+        if(!validatePostData(getFormData(formCalculator))) { return; }
+
+        payPeriod();
+
+        // Run calculators
+        calc_gross_income();
+        calc_income_tax();
+        calc_net_income();
+        calc_super();
+        calc_pay();
+
+        _payslipCalculated = true;
+
+        displayPayslip();
+      };
 
       function validatePostData(data) {
         if(!(data.first_name && data.first_name.length)) {
@@ -31,51 +128,74 @@
         return true;
       };
 
+      function displayPayslip() {
+        if(!_formData) {return;}
+
+        $('#payslip_output').empty()
+        $('#payslip_output').html(`
+<h3>Payslip Details</h3>
+<b>First Name:</b> `+_formData.first_name+`<br/>
+<b>Last Name:</b> `+_formData.last_name+`<br/>
+<b>Annual Salary:</b> `+_formData.annual_salary+`<br/>
+<b>Super Rate:</b> `+_formData.super_rate+`<br/>
+<hr/>
+<b></b>
+<b>pay period:</b> `+_formData.pay_period+`<br/>
+<b>gross income:</b> `+_formData.gross_income+`<br/>
+<b>income tax:</b> `+_formData.income_tax+`<br/>
+<b>net income:</b> `+_formData.net_income+`<br/>
+<b>super:</b> `+_formData.super+`<br/>
+<b>pay:</b> `+_formData.pay+`<br/>
+<hr/>
+<button class="btn btn-success" type="button" onclick="savePayslip()">Pay</button>
+          `);
+      };
+
       function caller(path) {
         var xhr = new XMLHttpRequest();
         xhr.open("POST", path, true);
-        xhr.setRequestHeader("Content-type", "application/json");
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         return xhr;
-      }
+      };
 
-      function submitCalc(data) {
-        xhr = caller('api/calc');
+      /*function submitPayslip(data) {
+        xhr = caller('api/payslip');
         xhr.onreadystatechange = function () {
           if (xhr.readyState === 4 && xhr.status === 200) {
             var json = JSON.parse(xhr.responseText);
-            // TODO: Do something with the results
-            console.log('output',json);
+            displayPayslip();
+          } else {
+            alert('Error',xhr.statusText)
           }
         };
         xhr.send(JSON.stringify(data));
-      }
+      };*/
 
-      function calculate(formCalculator) {
-        var data = getPostData(formCalculator);
-        if(validatePostData(data)) {
-          submitCalc(data);
-        }
-      }
-
-
-      function submitSave(data) {
-        xhr = caller('api/save');
+      function savePayslip() {
+        if(!_payslipCalculated) { return alert('Please generate a payslip first'); }
+        xhr = caller('api/payslip/save');
         xhr.onreadystatechange = function () {
-          if (xhr.readyState === 4 && xhr.status === 200) {
-            var json = JSON.parse(xhr.responseText);
-            // TODO: Do something with the results
-            console.log('output',json);
+          if (xhr.readyState === 4) {
+            if(xhr.status === 200) {
+              alert('Payslip Saved');
+            } else if(xhr.status == 409) {
+              alert('Payslip already created for this person');
+            } else {
+              alert('Error creating payslip')
+            }
           }
         };
-        xhr.send(JSON.stringify(data));
-      }
+        xhr.send(JSON.stringify(_formData));
+      };
 
-      function save(formCalculator) {
-        var data = getPostData(formCalculator);
-        if(validatePostData(data)) {
-          submitSave(data);
-        }
-      }
+      function clearData(formCalculator) {
+        formCalculator.first_name.value = null;
+        formCalculator.last_name.value = null;
+        formCalculator.annual_salary.value = null;
+        formCalculator.super_rate.value = null;
+        _formData = null;
+        _payslipCalculated = false;
+      };
     </script>
 
     <!-- Payroll calculator -->
@@ -118,20 +238,15 @@
             <input type="number" class="form-control" placeholder="Super Rate" aria-describedby="super_rate" name="super_rate">
           </div>
 
-          <button type="button" onclick="calculate(formCalculator)">Calculate</button>
+          <hr/>
 
-          <button type="button" onclick="save(formCalculator)">Save</button>
+          <button class="btn btn-default" type="button" onclick="clearData(formCalculator)">Clear</button>
 
-          <!-- Pay Period -->
-          <!-- <div class="input-group">
-            <span class="input-group-addon" id="pay_period">
-              <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>&nbsp;
-              Pay Period
-            </span>
-            <input type="date" class="form-control" placeholder="Username" aria-describedby="pay_period">
-          </div> -->
+          <button class="btn btn-primary" type="button" onclick="calculatePayslip(formCalculator)">Generate Payslip</button>
 
-
+          <div id="payslip_output">
+            <!-- Payslip output will go here -->
+          </div>
 
         </div>
       </div>

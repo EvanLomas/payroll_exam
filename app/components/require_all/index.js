@@ -1,17 +1,20 @@
 'use strict';
 
 var fs = require('fs');
+var path = require('path');
 
 module.exports = (srcpath) => {
   if(!srcpath) { return; }
   var output = {};
 
-  folders = fs
+  var folders = fs
     .readdirSync(srcpath)
-    .filter((file) => fs.lstatSync(path.join(srcpath, file)).isDirectory());
+    .filter((file) => {
+      return fs.lstatSync(path.join(srcpath, file)).isDirectory();
+    });
 
   folders.forEach((key) => {
-    output[key] = require(path.join(srcpath, file));
+    output[key] = require(path.join(srcpath, key));
   });
 
   return output;

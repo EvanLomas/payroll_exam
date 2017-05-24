@@ -17,7 +17,9 @@
   },
   "homepage": "https://github.com/zeus3rd/payroll_exam#readme",
   "dependencies": {
-    "express": "^4.15.3"
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "q": "^1.5.0"
   },
   "devDependencies": {
     "connect-livereload": "^0.6.0",
