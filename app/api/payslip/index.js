@@ -10,7 +10,7 @@ module.exports = (req, res) => {
     .then(payslips.save)
     .then(res.send.bind(res))
     .catch((err) => {
-      console.log('err',err)
+      console.error('err',err)
       res.status(404).send(err);
     });
 };

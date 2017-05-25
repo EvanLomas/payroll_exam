@@ -8,12 +8,125 @@
       src="https://code.jquery.com/jquery-3.2.1.min.js"
       integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
       crossorigin="anonymous"></script>
+
+    <style>
+      #payslip_output .list-group-item:nth-child(odd) {
+        background: lightgrey;
+      }
+
+      /* Input row padding */
+      .employee_info .row:not(:last-child) {
+        padding-bottom: 10px;
+      }
+
+      .action-pane {
+        text-align: right;
+      }
+    </style>
   </head>
   <body>
+
+    <!-- Payroll calculator -->
+    <form name="formCalculator" >
+      <div class="panel panel-default employee_info">
+        <div class="panel-heading">
+          <h3 class="panel-title">Employee Info</h3>
+        </div>
+        <div class="panel-body">
+
+          <div class="container-fluid">
+            <div class="row">
+
+              <!-- First Name -->
+              <div class="col-sm-6">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="First Name"
+                  aria-label="First Name"
+                  name="first_name">
+              </div>
+
+              <!-- Last Name -->
+              <div class="col-sm-6">
+                <input
+                type="text"
+                class="form-control"
+                placeholder="Last Name"
+                aria-label="Last Name"
+                name="last_name">
+              </div>
+
+            </div>
+            <div class="row">
+
+              <!-- Annual Salary -->
+              <div class="col-sm-6">
+                <div class="input-group">
+                  <span class="input-group-addon">$</span>
+                  <input
+                    type="number"
+                    class="form-control"
+                    placeholder="Annual Salary"
+                    aria-label="Annual Salary"
+                    name="annual_salary">
+                  <span class="input-group-addon">.00</span>
+                </div>
+              </div>
+
+              <!-- Super Rate -->
+              <div class="col-sm-6">
+                <div class="input-group">
+                  <input
+                    type="number"
+                    class="form-control"
+                    placeholder="Super Rate"
+                    aria-label="Super Rate"
+                    name="super_rate">
+                  <span class="input-group-addon">%</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <hr/>
+
+          <div class="action-pane">
+            <button
+              class="btn btn-default"
+              type="button"
+              onclick="clearData(formCalculator)">Clear</button>
+
+            <button
+              class="btn btn-primary"
+              type="button"
+              onclick="calculatePayslip(formCalculator)">Generate Payslip</button>
+          </div>
+
+          <div id="payslip_output">
+            <!-- Payslip output will go here -->
+          </div>
+
+        </div>
+      </div>
+    </form>
 
     <script>
       var _formData;
       var _payslipCalculated = false;
+
+      // Currency formatter
+      Number.prototype.formatCurrency = function(c, d, t){
+      var n = this, 
+          c = isNaN(c = Math.abs(c)) ? 2 : c, 
+          d = d == undefined ? "." : d, 
+          t = t == undefined ? "," : t, 
+          s = n < 0 ? "-" : "", 
+          i = String(parseInt(n = Math.abs(Number(n) || 0).toFixed(c))), 
+          j = (j = i.length) > 3 ? j % 3 : 0;
+         return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+       };
 
 
       var taxTable = [{
@@ -133,21 +246,47 @@
 
         $('#payslip_output').empty()
         $('#payslip_output').html(`
-<h3>Payslip Details</h3>
-<b>First Name:</b> `+_formData.first_name+`<br/>
-<b>Last Name:</b> `+_formData.last_name+`<br/>
-<b>Annual Salary:</b> `+_formData.annual_salary+`<br/>
-<b>Super Rate:</b> `+_formData.super_rate+`<br/>
+
+<h3>Payslip</h3>
+<h4>`+_formData.first_name+` `+_formData.last_name+`</h4>
+
+<div class="container-fluid">
+  <div class="list-group row">
+    <div class="list-group-item row">
+      <div class="col-xs-6">Annual Salary</div>
+      <div class="col-xs-6">`+_formData.annual_salary.formatCurrency()+`</div>
+    </div>
+    <div class="list-group-item row">
+      <div class="col-xs-6">Pay Period</div>
+      <div class="col-xs-6">`+_formData.pay_period+`</div>
+    </div>
+    <div class="list-group-item row">
+      <div class="col-xs-6">Gross Income</div>
+      <div class="col-xs-6">`+_formData.gross_income.formatCurrency()+`</div>
+    </div>
+    <div class="list-group-item row">
+      <div class="col-xs-6">Income Tax</div>
+      <div class="col-xs-6">`+_formData.income_tax.formatCurrency()+`</div>
+    </div>
+    <div class="list-group-item row">
+      <div class="col-xs-6">Net Income</div>
+      <div class="col-xs-6">`+_formData.net_income.formatCurrency()+`</div>
+    </div>
+    <div class="list-group-item row">
+      <div class="col-xs-6">Super</div>
+      <div class="col-xs-6">`+_formData.super.formatCurrency()+`</div>
+    </div>
+    <div class="list-group-item row">
+      <div class="col-xs-6">Pay</div>
+      <div class="col-xs-6">`+_formData.pay.formatCurrency()+`</div>
+    </div>
+  </div>
+</div>
+
 <hr/>
-<b></b>
-<b>pay period:</b> `+_formData.pay_period+`<br/>
-<b>gross income:</b> `+_formData.gross_income+`<br/>
-<b>income tax:</b> `+_formData.income_tax+`<br/>
-<b>net income:</b> `+_formData.net_income+`<br/>
-<b>super:</b> `+_formData.super+`<br/>
-<b>pay:</b> `+_formData.pay+`<br/>
-<hr/>
-<button class="btn btn-success" type="button" onclick="savePayslip()">Pay</button>
+<div class="action-pane">
+  <button class="btn btn-success" type="button" onclick="savePayslip()">Pay</button>
+</div>
           `);
       };
 
@@ -197,60 +336,6 @@
         _payslipCalculated = false;
       };
     </script>
-
-    <!-- Payroll calculator -->
-    <form name="formCalculator" >
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">Employee</h3>
-        </div>
-        <div class="panel-body">
-
-          <!-- First Name -->
-          <div class="input-group">
-            <span class="input-group-addon" id="first_name">
-              First Name
-            </span>
-            <input type="text" class="form-control" placeholder="First Name" aria-describedby="first_name" name="first_name">
-          </div>
-
-          <!-- Last Name -->
-          <div class="input-group">
-            <span class="input-group-addon" id="last_name">
-              Last Name
-            </span>
-            <input type="text" class="form-control" placeholder="Last Name" aria-describedby="last_name" name="last_name">
-          </div>
-
-          <!-- Annual Salary -->
-          <div class="input-group">
-            <span class="input-group-addon" id="annual_salary">
-              Annual Salary $
-            </span>
-            <input type="number" class="form-control" placeholder="Annual Salary" aria-describedby="annual_salary" name="annual_salary">
-          </div>
-
-          <!-- Super Rate -->
-          <div class="input-group">
-            <span class="input-group-addon" id="super_rate">
-              Super Rate %
-            </span>
-            <input type="number" class="form-control" placeholder="Super Rate" aria-describedby="super_rate" name="super_rate">
-          </div>
-
-          <hr/>
-
-          <button class="btn btn-default" type="button" onclick="clearData(formCalculator)">Clear</button>
-
-          <button class="btn btn-primary" type="button" onclick="calculatePayslip(formCalculator)">Generate Payslip</button>
-
-          <div id="payslip_output">
-            <!-- Payslip output will go here -->
-          </div>
-
-        </div>
-      </div>
-    </form>
 
   </body>
 </html>

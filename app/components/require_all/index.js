@@ -1,5 +1,11 @@
 'use strict';
 
+/*
+** This component takes a given folder path and loops through all child folders to
+** dynamically generate "require(~)" objects
+** It is assumed all folders under the given directory have an "index.js" file
+*/
+
 var fs = require('fs');
 var path = require('path');
 

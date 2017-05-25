@@ -7,7 +7,7 @@ describe('calc > super', () => {
   });
 
   it('should return 5000 from 200000 @ 3%', () => {
-    expect(calc({annual_salary:200000,super_rate:0.3})).toBe(5000);
+    expect(calc({annual_salary:200000,super_rate:3})).toBe(500);
   });
 
   // TODO: Further tests
