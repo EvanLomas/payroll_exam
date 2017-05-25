@@ -18,6 +18,25 @@ gulp serve
 
 # Folder structure
 
+Server API endpoints:
+```
+/app/api
+```
+
+Server components:
+```
+/app/components
+```
+
+Client files:
+```
+/public
+```
+
+Stored payslips:
+```
+/payslips
+```
 
 # Important Notes to Examiner
 
@@ -32,3 +51,5 @@ There were a number of short cuts and assumptions taken in the backend code and 
 The payslip generated is stored in /payslips as a json file which could be used for future calculations, indexing, pdf generation, etc. and notes about this generation and what could be improved with a real world scenario and a mindful goal are detailed in /app/components/payslips/save/index.js
 
 More unit tests were planned throughout the backend but time limitations meant I had to limit what I implemented.
+
+In a real world scenario with a large project I would have used tools such as webpack, angular, etc. to flesh out the interface, provide live calculations and build a more componentized codebase for easier maintenance and documentation if required.
